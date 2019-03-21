@@ -1,6 +1,6 @@
 //import liraries
 import React, { Component } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Alert, Button ,StyleSheet ,StatusBar,AsyncStorage} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, Button ,StyleSheet ,StatusBar,AsyncStorage, ActivityIndicator} from 'react-native';
 import { StackNavigator } from 'react-navigation';
 import {Actions} from 'react-native-router-flux';
 import HomePage from './HomePage';
@@ -12,49 +12,76 @@ class LoginForm extends Component {
   constructor(){
     super();
     this.state = {
-      url: null,
+      baseUrl: null,
       username: null,
-      password: null
+      password: null,
+      loading: false
     }
   }
 
   _userLogin = async () => {
-    console.log("login...");
+    let domain, dir, searchUrl, loginUrl, response = null;
 
-	  let searchUrl = this.state.url;
-    let domain;
+    AsyncStorage.clear()
+    this.setState({'loading': true})
 
-    if (searchUrl.indexOf("//") > -1) {
+    searchUrl = this.state.baseUrl;
+    if(searchUrl == null){
+      Alert.alert("Warning", "Please enter valid URL");
+      this.setState({'loading': false})
+    }
+    else if (searchUrl != null && searchUrl.indexOf("//") > -1) {
       domain = searchUrl.split('/')[2];
-    }else{
+      dir = searchUrl.split('/')[3];
+      console.log(dir);
+      if(dir == null){
+        loginUrl = 'https://'+ domain +'/wp-login.php'
+      }else{
+        loginUrl = searchUrl
+      }
+      this.setState({'loading': false})
+    }else if(searchUrl != null){
       domain = searchUrl;
+      dir = searchUrl.split('/')[1];
+      if(dir == null){
+        loginUrl = 'https://'+ domain +'/wp-login.php'
+      }else{
+        loginUrl = 'https://'+ searchUrl
+      }
+      this.setState({'loading': false})
     }
 
-    const loginUrl = 'http://'+ domain +'/wp-login.php';
-    let response = '';
-    try{
-		    response = await fetch(loginUrl);   // fetch page
-    }catch (error) {
-        Alert.alert(error.toString())
-    }
-	  const htmlString = await response.text();  // get response text
-		const $ = cheerio.load(htmlString);
+    if(loginUrl != null){
+      this.setState({'loading': true})
+      console.log("url: " + loginUrl);
+      try{
+          response = await fetch(loginUrl);   // fetch page
+      }catch (error) {
+          Alert.alert("Warning", "Invalid URL");
+          this.setState({'loading': false})
+      }
+      const htmlString = await response.text();  // get response text
+  		const $ = cheerio.load(htmlString);
 
-    const username = $("#user_login").length;
-    const password = $("#user_pass").length;
+      const username = $("#user_login").length;
+      const password = $("#user_pass").length;
 
-    if(username == 1 && password == 1){
-       if(this.state.username == null || this.state.password == null){
-          Alert.alert("Please enter valid username and Password");
-       }else{
-         AsyncStorage.setItem('username', this.state.username);
-         AsyncStorage.setItem('password', this.state.password);
-         AsyncStorage.setItem('url', loginUrl);
-         Actions.HomePage();
-       }
-    }else{
-       Alert.alert("Invalid URL");
+      if(username == 1 && password == 1){
+         if(this.state.username == null || this.state.password == null){
+            Alert.alert("Warning", "Please enter valid Username and Password");
+            this.setState({'loading': false})
+         }else{
+           await AsyncStorage.setItem('username', this.state.username);
+           await AsyncStorage.setItem('password', this.state.password);
+           await AsyncStorage.setItem('url', loginUrl);
+           Actions.HomePage();
+         }
+      }else{
+         Alert.alert("Warning", "Invalid URL");
+         this.setState({'loading': false})
+      }
     }
+
 	}
 
     render() {
@@ -65,11 +92,11 @@ class LoginForm extends Component {
                 <TextInput style = {styles.input}
                             autoCapitalize="none"
                             editable={true}
-                						onChangeText={(url) => this.setState({url})}
+                						onChangeText={(baseUrl) => this.setState({baseUrl})}
                 						placeholder='URL'
                 						ref='url'
                 						returnKeyType='next'
-                            value={this.state.url}
+                            value={this.state.baseUrl}
                             selectTextOnFocus={true}
                             placeholderTextColor='rgba(225,225,225,0.7)'/>
 
@@ -94,9 +121,10 @@ class LoginForm extends Component {
                            placeholderTextColor='rgba(225,225,225,0.7)'
                            value={this.state.password}
                            secureTextEntry/>
-                 {/*   <Button onPress={onButtonPress} title = 'Login' style={styles.loginButton} /> */}
-              <TouchableOpacity style={styles.buttonContainer} onPress={this._userLogin.bind(this)} >
-                    <Text  style={styles.buttonText}>LOGIN</Text>
+
+                <TouchableOpacity disabled={this.state.loading} style={styles.buttonContainer} onPress={this._userLogin.bind(this)}>
+                {this.state.loading?<ActivityIndicator
+                animating = {true} color = '#3f729b' size = 'small'/>:<Text style={styles.buttonText}>LOGIN</Text>}
                 </TouchableOpacity>
             </View>
         );
