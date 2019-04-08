@@ -1,7 +1,7 @@
 package com.disciple;
 
 import android.app.Application;
-
+import com.github.wumke.RNExitApp.RNExitAppPackage;
 import com.facebook.react.ReactApplication;
 import com.github.alinz.reactnativewebviewbridge.WebViewBridgePackage;
 import com.facebook.react.ReactNativeHost;
@@ -24,7 +24,8 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
-            new WebViewBridgePackage()
+            new WebViewBridgePackage(),
+            new RNExitAppPackage()
       );
     }
 

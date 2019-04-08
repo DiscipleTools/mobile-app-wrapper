@@ -20,7 +20,7 @@ class App extends Component {
 
   componentDidMount() {
     AsyncStorage.getItem('valid').then((token) => {
-      if (token == "true"){
+      if (JSON.parse(token) == true){
         this.setState({
           hasToken: true,
           isLoaded: true

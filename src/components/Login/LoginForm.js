@@ -19,6 +19,24 @@ class LoginForm extends Component {
     }
   }
 
+
+  loadInitialState = async () => {
+    try {
+      await AsyncStorage.removeItem('username');
+      await AsyncStorage.removeItem('password');
+
+      await AsyncStorage.getItem('url').then((url) => {
+        this.setState({ 'baseUrl': url});
+      });
+     } catch (error) {
+          Alert.alert(error);
+     }
+  }
+
+  componentDidMount() {
+    this.loadInitialState().done()
+  }
+
   _userLogin = async () => {
     let domain, dir, searchUrl, loginUrl, response = null;
 
@@ -134,7 +152,8 @@ class LoginForm extends Component {
 // define your styles
 const styles = StyleSheet.create({
     container: {
-     padding: 20
+     padding: 20,
+     marginTop: 30
     },
     input:{
         height: 40,

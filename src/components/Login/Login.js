@@ -7,17 +7,13 @@ import LoginForm from './LoginForm';
 class Login extends Component {
     render() {
         return (
-        <KeyboardAvoidingView behavior="padding" style={styles.container}>
-
-                <View style={styles.loginContainer}>
+            <KeyboardAvoidingView behavior="padding" style={styles.container}>
+              <View style={styles.loginContainer}>
                     <Image resizeMode="contain" style={styles.logo} source={require('../../components/images/logo.png')} />
-
-                    </View>
+               </View>
                <View style={styles.formContainer}>
                    <LoginForm />
                </View>
-
-
             </KeyboardAvoidingView>
         );
     }
@@ -30,9 +26,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#3f729b',
     },
     loginContainer:{
+        flex: 1,
+        justifyContent: 'center',
         alignItems: 'center',
-        flexGrow: 1,
-        justifyContent: 'center'
+    },
+    formContainer: {
+      flex: 1,
+      flexDirection: 'column',
+      justifyContent: 'space-between',
     },
     logo: {
         position: 'absolute',
